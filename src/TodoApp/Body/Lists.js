@@ -1,31 +1,43 @@
-import React, { useEffect, useState } from "react";
-import ListItem from "../../components/ListItem";
 import axios from "axios";
+import React from "react";
+import { toast } from "react-toastify";
+import ListItem from "../../components/ListItem";
+import Loader from "../../components/Loader";
 
-const Lists = () => {
-  const [todo, setTodo] = useState([]);
+const Lists = (props) => {
+  const { todo, fetchTodoList, setEditData, loader } = props;
 
-  const fetchTodoList = async () => {
-    const response = await axios.get("https://infodev-server.herokuapp.com/api/todos");
-    setTodo(response?.data || []);
+  const handleDelete = async (id) => {
+    const response = await axios.delete(`https://infodev-server.herokuapp.com/api/todos/${id}`);
+
+    if (response?.data?.id) {
+      fetchTodoList();
+      toast("Deleted successfully");
+    }
   };
-
-  useEffect(() => {
-    fetchTodoList();
-  }, []);
 
   return (
     <div id="lecture-list">
-      <ul>
-        {todo.map((item) => (
-          <ListItem
-            key={item._id}
-            title={item.name}
-            description={item.description}
-            completed={item.completed}
-          />
-        ))}
-      </ul>
+      {loader ? (
+        <div className="text-center p-5">
+          <Loader />
+        </div>
+      ) : (
+        <ul>
+          {todo.map((item) => (
+            <ListItem
+              key={item._id}
+              id={item._id}
+              priority={item.priority}
+              title={item.name}
+              description={item.description}
+              completed={item.completed}
+              handleDelete={() => handleDelete(item._id)}
+              handleEdit={() => setEditData(item)}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
